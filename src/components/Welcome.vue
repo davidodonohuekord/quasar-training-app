@@ -1,0 +1,37 @@
+<template>
+<div class="main">
+    <div class="header">
+    <img v-if="content.logo1" :src="content.logo1" class="img"/>
+    <h1 text-h1 v-if="content.title">{{content.title}}</h1>
+    <img v-if="content.logo2" :src="content.logo2" class="img"/>
+    </div>
+<q-btn color="primary" label="Begin familiarisation" @click="begin" />
+</div>
+</template>
+
+<script>
+    export default {
+        props: ["content"],
+        methods: {
+            begin() {
+                this.$emit('next');
+            }
+        }
+    }
+</script>
+
+<style scoped>
+
+.img {
+    object-fit: cover;
+    width: 20vw;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+</style>
