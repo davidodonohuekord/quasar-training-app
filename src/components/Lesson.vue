@@ -3,7 +3,7 @@
         <h1 text-h1>Lesson: {{this.stages[this.currentStage]}}</h1>
         <p textbody-1>
             Target operation: {{this.currentQuestion.targetOperation}}<br>
-            {{this.currentQuestion.prompt ? this.currentQuestion.prompt : null}}
+            {{this.currentQuestion.prompt && this.showPrompt ? this.currentQuestion.prompt : null}}
         </p>
         <div class="lessonMain">
             <controller :controllerDetails="configObject" />
@@ -22,12 +22,16 @@
 <script>
 
 import Controller from './Controller.vue'
+import * as chordEngine from '../ChordEngine'
+
+var engine;
 
     export default {
         components: { Controller },
-        props: ["configObject", "lastSequence"],
+        props: ["configObject"],
         data() {
             return {
+                engine: null,
                 lessonPlan: {
                     intro: [],
                     practice: [],
@@ -39,6 +43,7 @@ import Controller from './Controller.vue'
                     targetOperation: null,
                 },
                 currentStage: 0,
+                showPrompt: true,
                 stages: ["intro", "practice", "review", "test"],
                 progress: [0, 0, 0, 0],
                 completed: [0, 0, 0, 0],
@@ -69,7 +74,7 @@ import Controller from './Controller.vue'
                         )
                     }
                     // shuffle it
-                    this.lessonPlan.intro = this.shuffle(this.lessonPlan.intro);
+                    // this.lessonPlan.intro = this.shuffle(this.lessonPlan.intro);
                     // add practiceCount to practice section of lesson plan
                     for (let j = 0; j < this.configObject.rules[i].practiceCount; j++) {
                         this.lessonPlan.practice.push(
@@ -134,38 +139,48 @@ import Controller from './Controller.vue'
             },
         },
         mounted() {
+            this.engine = new chordEngine.ChordEngine(this.configObject.buttons);
+            window.addEventListener("keydown", this.engine.keyDown.bind(this.engine));
+            window.addEventListener("keyup", this.engine.keyUp.bind(this.engine));
+            this.engine.addRule(this.engine, this.configObject.rules);
             this.generateLessonPlan();
         },
         watch: {
-            lastSequence: function(n, o){
-                if (n != null){
-                    n = n.map(elem => elem.state);
-                    // n is null at the start or during the middle of making a chord
-                    if (this.arrayEquals(n, this.currentQuestion.targetSequence)){
-                        // answer is correct
-                        this.outcome = "Correct!";
-                        this.completed[this.currentStage] += 1;
-                    } else {
-                        // answer is incorrect, cycle it to the back
-                        // TODO: add more if testing stage?
-                        this.outcome = "Incorrect!!!!";
-                        if (this.currentStage == 3){
-                            this.currentStage = 2;
-                            this.completed[2] = 0;
-                            this.progress[2] = 0;
-                            this.completed[3] = 0;
-                            this.progress[3] = 0;
+            engine: {
+                deep: true,
+                handler: function (n, o){
+                    if (n.lastOperation != null){
+                        if (n.lastOperation == this.currentQuestion.targetOperation){
+                            // answer is correct
+                            this.outcome = "Correct!";
+                            if (this.showPrompt){
+                                this.showPrompt = false;
+                            } else {
+                                this.showPrompt = true;
+                                this.completed[this.currentStage] += 1;
+                            }
                         } else {
-                            var tmp = this.lessonPlan[this.stages[this.currentStage]].shift();
-                            this.lessonPlan[this.stages[this.currentStage]].push(tmp);
+                            // answer is incorrect, cycle it to the back
+                            // TODO: add more if testing stage?
+                            this.outcome = "Incorrect!!!!";
+                            if (this.currentStage == 3){
+                                this.progress[3] = 0;
+                                this.currentStage = 2;
+                                this.completed[2] = 0;
+                                this.completed[3] = 0;
+                            } else {
+                                var tmp = this.lessonPlan[this.stages[this.currentStage]].shift();
+                                this.lessonPlan[this.stages[this.currentStage]].push(tmp);
+                                if (this.currentStage == 1) {
+                                    // if it's the practice stage, add an extra practice to a random place
+                                    var index = Math.floor(Math.random() * (this.lessonPlan[this.stages[this.currentStage]].length - this.completed[this.currentStage])) + this.completed[this.currentStage];
+                                    this.lessonPlan[this.stages[this.currentStage]].splice(index, 0, tmp);
+                                }
+                            }
                         }
+                        this.nextQuestion();
                     }
-                    this.nextQuestion();
                 }
-                // TODO
-                // check whether o==n
-                // check whether n == null
-                // check whether n is the correct answer
             }
         }
     }
