@@ -83,13 +83,13 @@ class ChordEngine {
     // used by both keyUp (with debounce) and keyDown (without debounce)
     // mutates history
     _updateHistory(){
-        console.log("updating history")
-        this._debounce = false;
-        this._history.push({
-            state: this._currentState,
+        var self = this;
+        self._debounce = false;
+        self._history.push({
+            state: self._currentState,
             time: Date.now()
           });
-        this._ruleCheck(this);
+        self._ruleCheck(this);
     }
 
     // private function ruleCheck
@@ -105,7 +105,6 @@ class ChordEngine {
         if (self._history.length > 0){
             // extract the sequences from the rules array
             var sequences = self._rules.map(elem => elem.sequence);
-            console.log("self: ", self)
             // extract the chord states from the history
             // NOTE: this discards the timestamp, which will need to be taken into account when timing is implemented
             var stack = self._history.map(elem => elem.state);
@@ -117,7 +116,6 @@ class ChordEngine {
             for (let i = 0; i < sequences.length && self._history.length > 0; i++){
                 // compare the history stack to the current sequence being examined
                 // arrayCompare will return either 'nomatch', 'match', or 'prefix'
-                console.log("stack: ", stack, " sequences: ", sequences[i]);
                 var comparison = self._arrayCompare(stack, sequences[i]);
                 if (comparison == 'match') {
                     // match has been found, set lastOperation to operationName
