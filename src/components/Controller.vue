@@ -1,8 +1,8 @@
 <template>
 <div class="controller" :style="controllerStyle">
-    <span v-for="(square, index) in btnArray" :key="index" :class="square.style">
+    <div v-for="(square, index) in btnArray" :key="index" :class="square.btnClass" :style="square.btnStyle" >
         {{square.label ? square.label: null}}
-    </span>
+    </div>
 </div>
 </template>
 
@@ -13,94 +13,76 @@
         data() {
             return {
                 dimensions: {
-                    x: null,
-                    y: null,
+                    x: 0,
+                    y: 0,
+                    maxBtnWidth: 0,
+                    maxBtnHeight: 0,
                 },
                 btnArray: [],
                 controllerStyle: null,
+                controller: [],
             }
         },
         mounted(){
-            var maxCol = 0;
-            var maxRow = 0;
+            this.controller = [...this.controllerDetails.buttons];
+            window.addEventListener("keydown", this.keyDown);
+            window.addEventListener("keyup", this.keyUp);
             
-            for (let i = 0; i < this.controllerDetails.buttons.length; i++){
-                if (this.controllerDetails.buttons[i].x > maxCol){
-                    maxCol = this.controllerDetails.buttons[i].x;
+            for (let i = 0; i < this.controller.length; i++){
+                if (this.controller[i].x > this.dimensions.x){
+                    this.dimensions.x = this.controller[i].x;
                 }
-                if (this.controllerDetails.buttons[i].y > maxRow){
-                    maxRow = this.controllerDetails.buttons[i].y;
+                if (this.controller[i].y > this.dimensions.y){
+                    this.dimensions.y = this.controller[i].y;
+                }
+                if (this.controller[i].width > this.dimensions.maxBtnWidth){
+                    this.dimensions.maxBtnWidth = this.controller[i].width;
+                }
+                if (this.controller[i].height > this.dimensions.maxBtnHeight){
+                    this.dimensions.maxBtnHeight = this.controller[i].height;
                 }
             }
-            this.dimensions.x = maxCol;
-            this.dimensions.y = maxRow;
             this.controllerStyle = {
-                'grid-template-rows': 'repeat(' + maxRow + ', 100px)',
-                'grid-template-columns': 'repeat(' + maxCol + ', 100px)'
+                'grid-template-rows': 'repeat(' + this.dimensions.y + ', ' + this.dimensions.maxBtnHeight + 'px)',
+                'grid-template-columns': 'repeat(' + this.dimensions.x + ', ' + this.dimensions.maxBtnWidth + 'px)'
             };
             this.refreshArray();
         },
-        watch: {
-            controllerDetails:{
-                deep: true,
-                immediate: true,
-                handler: "refreshArray",
-            }
-        },
         methods: {
+            keyDown(event){
+                var index = this.controller.findIndex(x => x.key == event.key);
+                if (index != -1){
+                    this.controller[index].active = true;
+                    this.refreshArray();
+                }
+            },
+            keyUp(event){
+                var index = this.controller.findIndex(x => x.key == event.key);
+                if (index != -1){
+                    this.controller[index].active = false;
+                    this.refreshArray();
+                }
+            },
             refreshArray(){
                 this.btnArray = [];
                 for (let i = 0; i < (this.dimensions.x * this.dimensions.y); i++){
                     this.btnArray.push({
-                        style: "not-button"
+                        btnClass: "not-button"
                     });
                 }
-                for (let i = 0; i < this.controllerDetails.buttons.length; i++){
-                    var num = ((this.controllerDetails.buttons[i].y - 1) * this.dimensions.x + this.controllerDetails.buttons[i].x);
-                    var style = this.controllerDetails.buttons[i].active ? "active-button" : "inactive-button";
+                for (let i = 0; i < this.controller.length; i++){
+                    var num = ((this.controller[i].y - 1) * this.dimensions.x + this.controller[i].x);
+                    var btnClass = this.controller[i].active ? "active-button" : "inactive-button";
+                    btnClass += " btn";
+                    var btnStyle = "width: " + this.controller[i].width + "px; height: " + this.controller[i].height + "px;";
                     this.btnArray.splice(num - 1, 1, {
-                        style,
-                        label: this.controllerDetails.buttons[i].label,
+                        btnStyle,
+                        btnClass,
+                        label: this.controller[i].label,
                     });
                 }
             }
         },
-        // computed: {
-        //     dimensions(){
-        //         var maxCol = 0;
-        //         var maxRow = 0;
-        //         var btnArray = [];
-                
-        //         for (let i = 0; i < this.controllerDetails.buttons.length; i++){
-        //             if (this.controllerDetails.buttons[i].x > maxCol){
-        //                 maxCol = this.controllerDetails.buttons[i].x;
-        //             }
-        //             if (this.controllerDetails.buttons[i].y > maxRow){
-        //                 maxRow = this.controllerDetails.buttons[i].y;
-        //             }
-        //         }
-
-        //         for (let i = 0; i < (maxCol * maxRow); i++){
-        //             btnArray.push({
-        //                 style: "not-button"
-        //             })
-        //         }
-
-        //         for (let i = 0; i < this.controllerDetails.buttons.length; i++){
-        //             var num = ((this.controllerDetails.buttons[i].y - 1) * maxCol + this.controllerDetails.buttons[i].x);
-        //             var style = this.controllerDetails.buttons[i].active ? "active-button" : "inactive-button";
-        //             btnArray.splice(num - 1, 1, {
-        //                 style,
-        //                 label: this.controllerDetails.buttons[i].label,
-        //             });
-        //         }
-        //         return {
-        //             x:maxCol,
-        //             y:maxRow,
-        //             btnArray
-        //         }
-        //     }
-        // }
     }
 </script>
 
@@ -116,19 +98,26 @@
 
 .controller {
     display: grid;
+    justify-items: center;
+    align-items: center;
+    column-gap: 5px;
+    row-gap: 5px;
+}
 
+.btn {
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid green;
 }
 
 .active-button {
-    width:100px;
-    height: 100px;
     background-color: green;
 }
 
 .inactive-button {
-    width:100px;
-    height: 100px;
-    background-color: gray;
+
 }
 
 .not-button {

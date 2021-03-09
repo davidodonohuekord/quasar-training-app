@@ -13,14 +13,6 @@ import Controller from './Controller.vue'
     export default {
         components: { Controller },
         props: ["configObject"],
-        data() {
-            return {
-                columns: [
-                    { name: 'fn', align: 'center', label: 'Fn', field: 'fn', sortable: true },
-                    { name: 'sequence', align: 'center', label: 'Sequence', field: 'buttonSequence', sortable: true },
-                ]
-            }
-        },
         methods: {
             begin(){
                 this.$emit('next')

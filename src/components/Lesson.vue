@@ -24,8 +24,6 @@
 import Controller from './Controller.vue'
 import * as chordEngine from '../ChordEngine'
 
-var engine;
-
     export default {
         components: { Controller },
         props: ["configObject"],
