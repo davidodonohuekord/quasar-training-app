@@ -1,8 +1,9 @@
 <template>
 <div class="app">
-  <welcome v-if="currentPage == 'Welcome'" @next="navigateTo('Familiarisation')" :content="packager.content"/>
-  <familiarisation v-else-if="currentPage == 'Familiarisation'" @next="navigateTo('Lesson')" :configObject="configObject"/>
-  <lesson v-else-if="currentPage == 'Lesson'" @next="navigateTo('Welcome')" :configObject="configObject" />
+  <welcome v-if="currentPage == 'Welcome'" @navigate-to="navigateTo" :content="packager.content"/>
+  <familiarisation v-else-if="currentPage == 'Familiarisation'" @navigate-to="navigateTo" :configObject="configObject"/>
+  <lesson v-else-if="currentPage == 'Lesson'" @navigate-to="navigateTo" :configObject="configObject" />
+  <waterfall v-else-if="currentPage == 'Waterfall'" :configObject="configObject" />
 </div>
 </template>
 
@@ -10,9 +11,10 @@
 import Welcome from 'src/components/Welcome.vue'
 import Familiarisation from 'src/components/Familiarisation.vue'
 import Lesson from 'src/components/Lesson.vue'
+import Waterfall from 'src/components/Waterfall.vue'
 
 export default {
-  components: { Welcome, Familiarisation, Lesson },
+  components: { Welcome, Familiarisation, Lesson, Waterfall },
   name: 'MainLayout',
 
   data () {
@@ -27,9 +29,9 @@ export default {
           {x:3, y:1, key: ";", label: "Semicolon (;)", chordValue: 16, width: 100, height: 100, activeColour: 'green', inactiveColour: 'grey'},
         ],
         rules: [
-          {sequence: [1, 3, 0], operationName: "OneThreeZero", prompt: "Press and hold the spacebar, then the J key, and then release.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
-          {sequence: [1, 5, 0], operationName: "OneFiveZero", prompt: "Press and hold the spacebar, then the K key, and then release.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
-          {sequence: [1, 3, 1, 0], operationName: "OneThreeOneZero", prompt: "Press and hold the spacebar, then the J key, and then release the J key, and then the spacebar.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
+          {sequence: [{include: 1, exclude: 28}], operationName: "Flashlight", prompt: "Press the space bar, and not the K L or Semicolon keys.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
+          {sequence: [{include: 2, exclude: 28}], operationName: "PTT", prompt: "Press the J key, and not the K L or Semicolon keys.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
+          {sequence: [{include: 4, exclude: 0}, {include: 0, exclude: 32}, {include: 4, exclude: 0}, {include: 0, exclude: 32}], operationName: "CoupletDemo", prompt: "Press the K key, then release all keys, then press the K key again.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
         ]
       },
       currentPage: "Welcome",

@@ -135,52 +135,39 @@ import * as chordEngine from '../ChordEngine'
                     this.currentQuestion = this.lessonPlan[this.stages[this.currentStage]][this.completed[this.currentStage]];
                 }
             },
+            operated(){
+                if (this.engine.activeOperations.includes(this.currentQuestion.targetOperation)){
+                    // answer is correct
+                    this.outcome = "Correct!";
+                } else {
+                    // answer is incorrect, cycle it to the back
+                    this.outcome = "Incorrect!";
+                    if (this.currentStage == 3){
+                        this.progress[3] = 0;
+                        this.currentStage = 2;
+                        this.completed[2] = 0;
+                        this.completed[3] = 0;
+                    } else {
+                        var tmp = this.lessonPlan[this.stages[this.currentStage]].shift();
+                        this.lessonPlan[this.stages[this.currentStage]].push(tmp);
+                        if (this.currentStage == 1) {
+                            // if it's the practice stage, add an extra practice to a random place
+                            var index = Math.floor(Math.random() * (this.lessonPlan[this.stages[this.currentStage]].length - this.completed[this.currentStage])) + this.completed[this.currentStage];
+                            this.lessonPlan[this.stages[this.currentStage]].splice(index, 0, tmp);
+                        }
+                    }
+                }
+                this.nextQuestion();
+            }
         },
         mounted() {
             this.engine = new chordEngine.ChordEngine(this.configObject.buttons);
             window.addEventListener("keydown", this.engine.keyDown.bind(this.engine));
             window.addEventListener("keyup", this.engine.keyUp.bind(this.engine));
+            window.addEventListener("operated", this.operated)
             this.engine.addRule(this.engine, this.configObject.rules);
             this.generateLessonPlan();
         },
-        watch: {
-            engine: {
-                deep: true,
-                handler: function (n, o){
-                    if (n.lastOperation != null){
-                        if (n.lastOperation == this.currentQuestion.targetOperation){
-                            // answer is correct
-                            this.outcome = "Correct!";
-                            if (this.showPrompt){
-                                this.showPrompt = false;
-                            } else {
-                                this.showPrompt = true;
-                                this.completed[this.currentStage] += 1;
-                            }
-                        } else {
-                            // answer is incorrect, cycle it to the back
-                            // TODO: add more if testing stage?
-                            this.outcome = "Incorrect!!!!";
-                            if (this.currentStage == 3){
-                                this.progress[3] = 0;
-                                this.currentStage = 2;
-                                this.completed[2] = 0;
-                                this.completed[3] = 0;
-                            } else {
-                                var tmp = this.lessonPlan[this.stages[this.currentStage]].shift();
-                                this.lessonPlan[this.stages[this.currentStage]].push(tmp);
-                                if (this.currentStage == 1) {
-                                    // if it's the practice stage, add an extra practice to a random place
-                                    var index = Math.floor(Math.random() * (this.lessonPlan[this.stages[this.currentStage]].length - this.completed[this.currentStage])) + this.completed[this.currentStage];
-                                    this.lessonPlan[this.stages[this.currentStage]].splice(index, 0, tmp);
-                                }
-                            }
-                        }
-                        this.nextQuestion();
-                    }
-                }
-            }
-        }
     }
 </script>
 

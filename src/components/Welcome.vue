@@ -5,7 +5,8 @@
     <h1 text-h1 v-if="content.title">{{content.title}}</h1>
     <img v-if="content.logo2" :src="content.logo2" class="img"/>
     </div>
-<q-btn color="primary" label="Begin familiarisation" @click="begin" />
+<q-btn color="primary" label="Begin familiarisation" @click="navigateTo('Familiarisation')" />
+<q-btn color="primary" label="Start waterfall" @click="navigateTo('Waterfall')" />
 </div>
 </template>
 
@@ -13,8 +14,8 @@
     export default {
         props: ["content"],
         methods: {
-            begin() {
-                this.$emit('next');
+            navigateTo(target) {
+                this.$emit('navigate-to', target);
             }
         }
     }
