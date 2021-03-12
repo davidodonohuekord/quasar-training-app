@@ -15,7 +15,7 @@ import Controller from './Controller.vue'
         props: ["configObject"],
         methods: {
             begin(){
-                this.$emit('next')
+                this.$emit('navigate-to', "Lesson")
             }
         }
     }

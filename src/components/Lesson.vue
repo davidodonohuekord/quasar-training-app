@@ -130,15 +130,16 @@ import * as chordEngine from '../ChordEngine'
                 }
                 if (this.currentStage == 4){
                     // TODO testing has been finished, handle the end somehow
-                    this.$emit('next');
+                    this.$emit('navigate-to', "Welcome");
                 } else {
                     this.currentQuestion = this.lessonPlan[this.stages[this.currentStage]][this.completed[this.currentStage]];
                 }
             },
-            operated(){
-                if (this.engine.activeOperations.includes(this.currentQuestion.targetOperation)){
+            operated(event){
+                if (event.detail.valid && event.detail.activeOperations.includes(this.currentQuestion.targetOperation)){
                     // answer is correct
                     this.outcome = "Correct!";
+                    this.completed[this.currentStage] += 1;
                 } else {
                     // answer is incorrect, cycle it to the back
                     this.outcome = "Incorrect!";
@@ -162,10 +163,8 @@ import * as chordEngine from '../ChordEngine'
         },
         mounted() {
             this.engine = new chordEngine.ChordEngine(this.configObject.buttons);
-            window.addEventListener("keydown", this.engine.keyDown.bind(this.engine));
-            window.addEventListener("keyup", this.engine.keyUp.bind(this.engine));
             window.addEventListener("operated", this.operated)
-            this.engine.addRule(this.engine, this.configObject.rules);
+            this.engine.addRule(this.configObject.rules);
             this.generateLessonPlan();
         },
     }

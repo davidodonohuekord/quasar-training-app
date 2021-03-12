@@ -1,14 +1,16 @@
 class ChordEngine {
     // constructs an instance of the chord engine and sets all of the required fields
     // chords is an array of {key: String, chordValue: int}
-    // does not listen for events, event listener must be set up externally to use keyUp and keyDown public functions defined here
     constructor(chords) {
+        // amount of ms to debounce
+        this._debounceMS = 50;
         this._currentState = 0;
         this.activeOperations = [];
         this._rules = [];
         this._history = [];
         this._chords = chords;
         this._debounce = false;
+        // add event listeners here and bind to context
         window.addEventListener("keydown", this.keyDown.bind(this));
         window.addEventListener("keyup", this.keyUp.bind(this));
     }
@@ -18,16 +20,15 @@ class ChordEngine {
     // rule is an object of the form {sequence: [int], operationName: string}
     // or an array of this object
     // mutates rules
-    // requires self as param
-    addRule(self, rule){
+    addRule(rule){
         if (Array.isArray(rule)){
             // array of rules, iterate and recurse
             for (let i = 0; i < rule.length; i++){
-                self.addRule(self, rule[i]);
+                this.addRule(rule[i]);
             }
         } else {
             // single rule
-            self._rules.push(rule);
+            this._rules.push(rule);
         }
     }
 
@@ -35,20 +36,22 @@ class ChordEngine {
     // handle the pressing of a key
     // mutates current state
     keyDown(event){
-        var self = this;
         // check the chords to see if this is a relevant key
-        var index = self._chords.findIndex(x => x.key == event.key);
+        var index = this._chords.findIndex(x => x.key == event.key);
         if (index != -1) {
             // get the chord value of the key
-            var keyChordValue = self._chords[index].chordValue;
+            var keyChordValue = this._chords[index].chordValue;
             // calculate a new chord state by adding the chord value of the key
-            var newState = self._currentState | keyChordValue;
+            var newState = this._currentState | keyChordValue;
             // if the chord state is different
-            if (self._currentState != newState){
+            if (this._currentState != newState){
                 // update the current state
-                self._currentState = newState;
-                // immediately update the history
-                self._updateHistory.bind(self)();
+                this._currentState = newState;
+                // if debounce has not been set, set it now and queue the update history function
+                if (!this._debounce){
+                    this._debounce = true;
+                    window.setTimeout(this._updateHistory.bind(this), this._debounceMS);
+                }
             }
         }
     }
@@ -58,22 +61,21 @@ class ChordEngine {
     // debounce is currently 100ms
     // mutates current state
     keyUp(event){
-        var self = this;
         // check the chords to see if this is a relevant key
-        var index = self._chords.findIndex(x => x.key == event.key);
+        var index = this._chords.findIndex(x => x.key == event.key);
         if (index != -1) {
             // get the chord value of the key
-            var keyChordValue = self._chords[index].chordValue;
+            var keyChordValue = this._chords[index].chordValue;
             // calculate a new chord state by subtracting the chord value of the key
-            var newState = self._currentState & (~keyChordValue)
+            var newState = this._currentState & (~keyChordValue)
             // if the chord state is different
-            if (self._currentState != newState){
+            if (this._currentState != newState){
                 // update the current state
-                self._currentState = newState;
+                this._currentState = newState;
                 // if debounce has not been set, set it now and queue the update history function
-                if (!self._debounce){
-                    self._debounce = true;
-                    window.setTimeout(self._updateHistory.bind(self), 100);
+                if (!this._debounce){
+                    this._debounce = true;
+                    window.setTimeout(this._updateHistory.bind(this), this._debounceMS);
                 }
             }
         }
@@ -85,13 +87,12 @@ class ChordEngine {
     // used by both keyUp (with debounce) and keyDown (without debounce)
     // mutates history
     _updateHistory(){
-        var self = this;
-        self._debounce = false;
-        self._history.push({
-            state: self._currentState,
+        this._debounce = false;
+        this._history.push({
+            state: this._currentState,
             time: Date.now()
           });
-        self._ruleCheck(this);
+        this._ruleCheck();
     }
 
     // private function ruleCheck
@@ -102,25 +103,24 @@ class ChordEngine {
     // 'invalid' if the current history stack is not a prefix of a sequence in rules
     // 'invalid' outcome will also discard the history stack
     // mutates history and activeOperations
-    _ruleCheck(self){
-        var operatedEvent = new Event('operated');
+    _ruleCheck(){
         // only proceed if the history hasn't been fully discarded
-        if (self._history.length > 0){
+        if (this._history.length > 0){
             // extract the sequences from the rules array
-            var sequences = self._rules.map(elem => elem.sequence);
+            var sequences = this._rules.map(elem => elem.sequence);
             // extract the chord states from the history
             // NOTE: this discards the timestamp, which will need to be taken into account when timing is implemented
-            var stack = self._history.map(elem => elem.state);
+            var stack = this._history.map(elem => elem.state);
             // whether or not the history is invalid
             var invalid = true;
             var matchIndicies = [];
             // for each of the sequences extracted from rules, and while history is not empty
             // exist immediately on match
             // on prefix, mard as valid but keep looking for match
-            for (let i = 0; i < sequences.length && self._history.length > 0; i++){
+            for (let i = 0; i < sequences.length && this._history.length > 0; i++){
                 // compare the history stack to the current sequence being examined
                 // arrayCompare will return either 'nomatch', 'match', 'break' or 'prefix'
-                var comparison = self._resolve(stack, sequences[i]);
+                var comparison = this._resolve(stack, sequences[i]);
                 if (comparison == 'match') {
                     // match has been found, add operationName to activeOperations
                     matchIndicies.push(i);
@@ -128,26 +128,31 @@ class ChordEngine {
                 } else if (comparison == 'prefix'){
                     invalid = false;
                 } else if (comparison == 'break'){
-                    self._history = [];
+                    this._history = [];
                     invalid = false;
                 }
             }
             if (invalid){
-                self.activeOperations = [];
-                self._history = [];
+                this.activeOperations = [];
+                this._history = [];
                 // also dispatch event here to let the trainer know you answered incorrectly
-                window.dispatchEvent(operatedEvent);
+                window.dispatchEvent(new CustomEvent('operated', {"detail": {
+                    valid: false,
+                }}));
             } else if (matchIndicies.length > 0){
                 for (let i = 0; i < matchIndicies.length; i++){
-                    self.activeOperations.push(self._rules[i].operationName);
-                    // reset history for the next command
-                    self._history = [];
-                    window.dispatchEvent(operatedEvent);
+                    this.activeOperations.push(this._rules[matchIndicies[i]].operationName);
                 }
+                // reset history for the next command
+                this._history = [];
+                window.dispatchEvent(new CustomEvent('operated', {"detail": {
+                    valid: true,
+                    activeOperations: this.activeOperations,
+                }}));
             } else {
                 // history stack is a prefix of at least 1 rule
                 // discard operations, keep history, don't dispatch event
-                self.activeOperations = [];
+                this.activeOperations = [];
             }
         }
     }
