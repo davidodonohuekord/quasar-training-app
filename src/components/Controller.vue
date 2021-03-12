@@ -72,9 +72,10 @@
                 }
                 for (let i = 0; i < this.controller.length; i++){
                     var num = ((this.controller[i].y - 1) * this.dimensions.x + this.controller[i].x);
-                    var btnClass = this.controller[i].active ? "active-button" : "inactive-button";
-                    btnClass += " btn";
-                    var btnStyle = "width: " + this.controller[i].width + "px; height: " + this.controller[i].height + "px;";
+                    var btnClass = "btn";
+                    var btnStyle = "width: " + this.controller[i].width + "px; height: " + this.controller[i].height + "px;" 
+                        + " background-color: " + (this.controller[i].active ? this.controller[i].activeColour : this.controller[i].inactiveColour)
+                        + "; border: 2px solid " + this.controller[i].activeColour;
                     this.btnArray.splice(num - 1, 1, {
                         btnStyle,
                         btnClass,
@@ -109,15 +110,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid green;
-}
-
-.active-button {
-    background-color: green;
-}
-
-.inactive-button {
-
 }
 
 .not-button {

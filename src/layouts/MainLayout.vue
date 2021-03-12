@@ -22,11 +22,11 @@ export default {
       configObject: {
         deviceName: "W2",
         buttons: [
-          {x:1, y:1, key: " ", label: "Space", chordValue: 1, width: 100, height: 100, activeColour: 'red', inactiveColour: 'blue'}, 
-          {x:2, y:1, key: "j", label: "J", chordValue: 2, width: 100, height: 100, activeColour: 'green', inactiveColour: 'grey'},
-          {x:2, y:3, key: "l", label: "L", chordValue: 8, width: 100, height: 100, activeColour: 'green', inactiveColour: 'grey'},
-          {x:2, y:2, key: "k", label: "K", chordValue: 4, width: 100, height: 100, activeColour: 'green', inactiveColour: 'grey'},
-          {x:3, y:1, key: ";", label: "Semicolon (;)", chordValue: 16, width: 100, height: 100, activeColour: 'green', inactiveColour: 'grey'},
+          {x:1, y:1, key: " ", label: "Space", chordValue: 1, width: 100, height: 100, activeColour: 'blue', inactiveColour: 'white'}, 
+          {x:2, y:1, key: "j", label: "J", chordValue: 2, width: 100, height: 100, activeColour: 'green', inactiveColour: 'white'},
+          {x:2, y:3, key: "l", label: "L", chordValue: 8, width: 100, height: 100, activeColour: 'green', inactiveColour: 'white'},
+          {x:2, y:2, key: "k", label: "K", chordValue: 4, width: 100, height: 100, activeColour: 'green', inactiveColour: 'white'},
+          {x:3, y:1, key: ";", label: "Semicolon (;)", chordValue: 16, width: 100, height: 100, activeColour: 'yellow', inactiveColour: 'white'},
         ],
         rules: [
           {sequence: [{include: 1, exclude: 28}], operationName: "Flashlight", prompt: "Press the space bar, and not the K L or Semicolon keys.", introCount: 2, practiceCount: 3, reviewCount: 2, testCount: 2 },
