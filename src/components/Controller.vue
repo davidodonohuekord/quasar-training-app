@@ -73,9 +73,9 @@
                 for (let i = 0; i < this.controller.length; i++){
                     var num = ((this.controller[i].y - 1) * this.dimensions.x + this.controller[i].x);
                     var btnClass = "btn";
-                    var btnStyle = "width: " + this.controller[i].width + "px; height: " + this.controller[i].height + "px;" 
-                        + " background-color: " + (this.controller[i].active ? this.controller[i].activeColour : this.controller[i].inactiveColour)
-                        + "; border: 2px solid " + this.controller[i].activeColour;
+                    var btnStyle = "width: " + this.controller[i].width + "px; height: " + this.controller[i].height + "px; " 
+                        + "background-color: " + (this.controller[i].active ? this.controller[i].activeColour : this.controller[i].inactiveColour) + "; "
+                        + "border: 2px solid " + this.controller[i].activeColour;
                     this.btnArray.splice(num - 1, 1, {
                         btnStyle,
                         btnClass,
@@ -106,14 +106,10 @@
 }
 
 .btn {
-    border-radius: 25px;
+    border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.not-button {
-    width: 100px;
-    height: 100px;
-}
 </style>

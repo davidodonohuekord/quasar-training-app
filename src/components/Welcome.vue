@@ -2,11 +2,11 @@
 <div class="main">
     <div class="header">
     <img v-if="content.logo1" :src="content.logo1" class="img"/>
-    <h1 text-h1 v-if="content.title">{{content.title}}</h1>
+    <h3 text-h3 v-if="content.title">{{content.title}}</h3>
     <img v-if="content.logo2" :src="content.logo2" class="img"/>
     </div>
 <q-btn color="primary" label="Begin familiarisation" @click="navigateTo('Familiarisation')" />
-<q-btn color="primary" label="Start waterfall" @click="navigateTo('Waterfall')" />
+<!-- <q-btn color="primary" label="Start waterfall" @click="navigateTo('Waterfall')" /> -->
 </div>
 </template>
 

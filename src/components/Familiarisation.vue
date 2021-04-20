@@ -1,6 +1,6 @@
 <template>
 <div class="main">
-    <h1 text-h1>Familiarisation</h1>
+    <span text-body1>Learn the numbering system by pression buttons on your Controller. When done, click the "Begin Test" button.</span>
     <div class="familiarisationMain">
         <controller :controllerDetails="configObject" />
     </div>

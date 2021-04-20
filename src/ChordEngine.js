@@ -3,7 +3,9 @@ class ChordEngine {
     // chords is an array of {key: String, chordValue: int}
     constructor(chords) {
         // amount of ms to debounce
-        this._debounceMS = 50;
+        this._debounceMS = 25;
+        this._timeoutMS = 2000;
+        this._timeout = null;
         this._currentState = 0;
         this.activeOperations = [];
         this._rules = [];
@@ -157,11 +159,11 @@ class ChordEngine {
         }
     }
 
-    // private function arrayCompare
+    // private function resolve
     // checks whether two arrays are equal,
     // or the first is a prefix of the second
     // returns a string, one of
-    // 'nomatch' 'match' or 'prefix'
+    // 'nomatch' 'match', 'break' or 'prefix'
     // does not mutate
     _resolve(history, sequence){
         if (history.length > sequence.length){
