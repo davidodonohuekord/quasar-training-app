@@ -70,8 +70,10 @@
                 }
                 for (let i = 0; i < this.controller.length; i++){
                     if (this.controller[i].switchLocation & num) {
-                        this.controller[i].active = true;
-                    } else {
+                        if (!this.controller[i].active){
+                            this.controller[i].active = true;
+                        }
+                    } else if (this.controller[i].active){
                         this.controller[i].active = false;
                     }
                 }
