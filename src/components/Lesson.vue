@@ -13,7 +13,7 @@
         </div>
         <div class="function">
             <span class="outcome" text-body1 :style="{color: outcomeColour}">{{this.outcome}}</span>
-            <h3 class="targetOperation" text-h3>{{this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion] && this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion].targetOperation}}</h3><br>
+            <h3 class="targetOperation" text-h3>{{this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion] && this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion].operationName}}</h3><br>
             <span class="functionLabel" text-body1>Function</span>
         </div>
         <div class="progress">
@@ -28,7 +28,7 @@
 <script>
 
 import Controller from './Controller.vue'
-import * as chordEngine from '../ChordEngine'
+import * as chordPasser from '../ChordPasser'
 
     export default {
         components: { Controller },
@@ -125,8 +125,8 @@ import * as chordEngine from '../ChordEngine'
                         this.currentQuestion = 0;
                     }
                 }
-                // if the new question does not have a targetOperation, queue this function again
-                if (!this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion].hasOwnProperty("targetOperation")){
+                // if the new question does not have a maxChord, queue this function again
+                if (!this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion].hasOwnProperty("maxChord")){
                     this.queueNextQuestion();
                 }
             },
@@ -147,8 +147,8 @@ import * as chordEngine from '../ChordEngine'
                     var past = currentLessonPlan.slice(0,this.currentQuestion);
                     var future = currentLessonPlan.slice(this.currentQuestion, currentLessonPlan.length);
                     // make sure to only look at actual questions
-                    var numPast = past.filter(elem => elem.hasOwnProperty("targetOperation")).length;
-                    var numFuture = future.filter(elem => elem.hasOwnProperty("targetOperation")).length;
+                    var numPast = past.filter(elem => elem.hasOwnProperty("maxChord")).length;
+                    var numFuture = future.filter(elem => elem.hasOwnProperty("maxChord")).length;
                     // update progress
                     this.progress[this.currentStage] = numPast/(numPast + numFuture);
                 }
@@ -175,14 +175,16 @@ import * as chordEngine from '../ChordEngine'
                     },
                     {
                         prompt: "Try it now: " + this.configObject.rules[randomRule].prompt,
-                        targetOperation: this.configObject.rules[randomRule].operationName,
+                        maxChord: this.configObject.rules[randomRule].maxChord,
+                        operationName: this.configObject.rules[randomRule].operationName
                     },
                     {
                         prompt: "? means remember what to press",
                     },
                     {
                         prompt: "Try it now: ?",
-                        targetOperation: this.configObject.rules[randomRule].operationName,
+                        maxChord: this.configObject.rules[randomRule].maxChord,
+                        operationName: this.configObject.rules[randomRule].operationName
                     },
                     {
                         prompt: "You got it!",
@@ -206,16 +208,19 @@ import * as chordEngine from '../ChordEngine'
                 for (let i = 0; i < this.configObject.rules.length; i++){
                     this.lessonPlan.Practice.push(
                         {prompt: this.configObject.rules[i].prompt,
-                        targetOperation: this.configObject.rules[i].operationName}
+                        maxChord: this.configObject.rules[i].maxChord,
+                        operationName: this.configObject.rules[i].operationName}
                     )
                     this.lessonPlan.Practice.push(
                         {prompt: "?",
-                        targetOperation: this.configObject.rules[i].operationName}
+                        maxChord: this.configObject.rules[i].maxChord,
+                        operationName: this.configObject.rules[i].operationName}
                     )
                     for (let j = 0; j < this.configObject.rules[i].practiceCount; j++) {
                         randomPractice.push(
                             {prompt: "?",
-                            targetOperation: this.configObject.rules[i].operationName}
+                            maxChord: this.configObject.rules[i].maxChord,
+                            operationName: this.configObject.rules[i].operationName}
                         )
                     }
                 }
@@ -229,11 +234,13 @@ import * as chordEngine from '../ChordEngine'
                 for (let i = 0; i < this.configObject.rules.length; i++){
                     this.lessonPlan.Review.push({
                         prompt: this.configObject.rules[i].prompt,
-                        targetOperation: this.configObject.rules[i].operationName
+                        maxChord: this.configObject.rules[i].maxChord,
+                        operationName: this.configObject.rules[i].operationName
                     });
                     this.lessonPlan.Review.push({
                         prompt: "?",
-                        targetOperation: this.configObject.rules[i].operationName
+                        maxChord: this.configObject.rules[i].maxChord,
+                        operationName: this.configObject.rules[i].operationName
                     });
                 }
                 // generate test
@@ -246,7 +253,8 @@ import * as chordEngine from '../ChordEngine'
                     for (let j = 0; j < this.configObject.rules[i].testCount; j++) {
                         testStage.push({
                             prompt: "?",
-                            targetOperation: this.configObject.rules[i].operationName
+                            maxChord: this.configObject.rules[i].maxChord,
+                            operationName: this.configObject.rules[i].operationName
                         })
                     }
                 }
@@ -272,7 +280,7 @@ import * as chordEngine from '../ChordEngine'
                 var question = this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion];
                 // do a check first to make sure that something hasn't called this function while
                 // waiting for the user to answer
-                if (question && !question.hasOwnProperty("targetOperation")){
+                if (question && !question.hasOwnProperty("maxChord")){
                     window.setTimeout(this.nextQuestion.bind(this), 3000);
                 }
             },
@@ -280,8 +288,8 @@ import * as chordEngine from '../ChordEngine'
                 // Make sure there is an active question waiting for a response before trying to
                 // figure out whether the response is correct
                 var question = this.lessonPlan[this.stages[this.currentStage]][this.currentQuestion];
-                if (question && question.hasOwnProperty("targetOperation")){
-                    if (event.detail.valid && event.detail.activeOperations.includes(question.targetOperation)){
+                if (question && question.hasOwnProperty("maxChord")){
+                    if (event.detail.maxChord == question.maxChord){
                         // answer is correct
                         this.setOutcome("Correct!");
                         // in all stages, this will mean progressing to the next question
@@ -304,17 +312,19 @@ import * as chordEngine from '../ChordEngine'
                                 // if there is no prompt, we need to figure out what an actually useful prompt would be
                                 // since practice is front loaded with questions that have prompts, we can grab the prompt
                                 // of the first question with a matching targetOperation
-                                var usefulPrompt = this.configObject.rules.filter(elem => elem.operationName == question.targetOperation)[0].prompt;
+                                var usefulPrompt = this.configObject.rules.filter(elem => elem.maxChord == question.maxChord)[0].prompt;
                                 this.addQuestion({
                                     prompt: usefulPrompt,
-                                    targetOperation: question.targetOperation
+                                    maxChord: question.maxChord,
+                                    operationName: question.operationName
                                 }, this.currentQuestion);
                             }
                             // find a random index between the current spot and the end of the stage
                             var randomIndex = Math.round(Math.random() * (this.lessonPlan[this.stages[this.currentStage]].length - this.currentQuestion)) + this.currentQuestion;
                             this.addQuestion({
                                 prompt: "?",
-                                targetOperation: question.targetOperation
+                                maxChord: question.maxChord,
+                                operationName: question.operationName
                             }, randomIndex);
                             this.updateProgress();
                         }
@@ -348,9 +358,8 @@ import * as chordEngine from '../ChordEngine'
             },
         },
         mounted() {
-            this.engine = new chordEngine.ChordEngine(this.configObject.buttons);
-            window.addEventListener("operated", this.operated)
-            this.engine.addRule(this.configObject.rules);
+            this.engine = new chordPasser.ChordPasser(this.configObject.rules);
+            window.addEventListener("break", this.operated);
             this.generateLessonPlan();
             this.queueNextQuestion();
         },

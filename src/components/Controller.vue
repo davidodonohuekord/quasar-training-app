@@ -26,7 +26,7 @@
         mounted(){
             this.controller = [...this.controllerDetails.buttons];
             window.addEventListener("keydown", this.keyDown);
-            window.addEventListener("keyup", this.keyUp);
+            // window.addEventListener("keyup", this.keyUp);
             
             for (let i = 0; i < this.controller.length; i++){
                 if (this.controller[i].x > this.dimensions.x){
@@ -49,19 +49,33 @@
             this.refreshArray();
         },
         methods: {
+            // keyDown(event){
+            //     var index = this.controller.findIndex(x => x.key == event.key);
+            //     if (index != -1){
+            //         this.controller[index].active = true;
+            //         this.refreshArray();
+            //     }
+            // },
+            // keyUp(event){
+            //     var index = this.controller.findIndex(x => x.key == event.key);
+            //     if (index != -1){
+            //         this.controller[index].active = false;
+            //         this.refreshArray();
+            //     }
+            // },
             keyDown(event){
-                var index = this.controller.findIndex(x => x.key == event.key);
-                if (index != -1){
-                    this.controller[index].active = true;
-                    this.refreshArray();
+                var num = event.key.charCodeAt(0) - 97;
+                if (event.key == "A"){
+                    num = 32;
                 }
-            },
-            keyUp(event){
-                var index = this.controller.findIndex(x => x.key == event.key);
-                if (index != -1){
-                    this.controller[index].active = false;
-                    this.refreshArray();
+                for (let i = 0; i < this.controller.length; i++){
+                    if (this.controller[i].switchLocation & num) {
+                        this.controller[i].active = true;
+                    } else {
+                        this.controller[i].active = false;
+                    }
                 }
+                this.refreshArray();
             },
             refreshArray(){
                 this.btnArray = [];
