@@ -65,11 +65,11 @@
             // },
             keyDown(event){
                 var num = event.key.charCodeAt(0) - 97;
-                if (event.key == "A"){
-                    num = 32;
-                }
+                // if (event.key == "A"){
+                //     num = 32;
+                // }
                 for (let i = 0; i < this.controller.length; i++){
-                    if (this.controller[i].switchLocation & num) {
+                    if (this.controller[i].chordValue & num) {
                         if (!this.controller[i].active){
                             this.controller[i].active = true;
                         }

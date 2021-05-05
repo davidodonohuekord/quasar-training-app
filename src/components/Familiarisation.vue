@@ -1,8 +1,9 @@
 <template>
 <div class="main">
-    <span text-body1>Learn the numbering system by pression buttons on your Controller. When done, click the "Begin Test" button.</span>
+    <span text-body1>Learn the numbering system by pressing buttons on your Controller. When done, click the "Begin Test" button.</span>
     <div class="familiarisationMain">
-        <controller :controllerDetails="configObject" />
+        <shadowpad-engine :controllerDetails="configObject" />
+        <!-- <controller :controllerDetails="configObject" /> -->
     </div>
     <q-btn color="primary" label="Begin test" @click="begin" />
 </div>
@@ -10,8 +11,9 @@
 
 <script>
 import Controller from './Controller.vue'
+import ShadowpadEngine from './Shadowpad.vue'
     export default {
-        components: { Controller },
+        components: { Controller, ShadowpadEngine },
         props: ["configObject"],
         methods: {
             begin(){
