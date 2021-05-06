@@ -166,6 +166,7 @@ import * as questionGeneratorClass from './QuestionGenerator.js'
                 }
             },
             nextQuestion(last){
+                this.currentResponseStartTime = new Date();
                 var question;
                 if (last){
                     question = this.questionGenerator.getQuestionWithHint(last);
@@ -198,11 +199,13 @@ import * as questionGeneratorClass from './QuestionGenerator.js'
                 // check if waiting for a response
                 if (this.openToEvents){
                     this.openToEvents = false;
+                    var now = new Date();
+                    var responseTime = now - this.currentResponseStartTime;
+                    this.currentResponseStartTime = null;
                     // check whether answer is correct or incorrect
                     if (event.detail.activeOperation == this.currentQuestion.operationName){ // answer is correct
-                        var now = new Date();
                         // record response time in correct array
-                        this.correctResponseTimes.push(now - this.currentResponseStartTime);
+                        this.correctResponseTimes.push(responseTime);
                         this.correctBuildTimes.push(event.detail.buildTime);
                         this.correctDwellTimes.push(event.detail.dwellTime);
                         this.questionsAnswered[this.currentStage] += 1;
@@ -211,17 +214,23 @@ import * as questionGeneratorClass from './QuestionGenerator.js'
                         }
                         this.setOutcome("Correct!");
                     } else { // answer is incorrect
-                        var now = new Date();
                         // record response time in incorrect array
-                        this.incorrectResponseTimes.push(now - this.currentResponseStartTime);
+                        this.incorrectResponseTimes.push(responseTime);
                         this.incorrectBuildTimes.push(event.detail.buildTime);
                         this.incorrectDwellTimes.push(event.detail.dwellTime);
+                        console.log("this.average(this.incorrectDwellTimes): ", this.average(this.incorrectDwellTimes));
                         // if they are in the practice stage, add more questions to this question type
                         if (this.currentStage == "Practice"){
+                            // if you would like to add more questions to a stage when a user
+                            // answers incorrectly, do it here
                             var questionsToAdd = 1;
                             this.questionGenerator.addQuestionsToStage("Practice", this.currentQuestion, questionsToAdd);
                             this.questionTotalCount[this.currentStage] += questionsToAdd;
                         } else if (["Review", "Test"].includes(this.currentStage)) {
+                            if (this.currentStage == "Test"){
+                                this.testFailedNum += 1;
+                                console.log("test failed: ", this.testFailedNum);
+                            }
                             // if they are in review or test, reset to review
                             this.resetToReview();
                         }

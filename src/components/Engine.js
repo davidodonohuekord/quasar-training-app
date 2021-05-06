@@ -18,6 +18,8 @@ class Engine {
         this.history = [];
         this.config = config;
         this.debounce = false;
+        this.buildStartTime = null;
+        this.lastChangeTime = null;
     }
 
     delete(){
@@ -52,6 +54,10 @@ class Engine {
         if (this.mode == "keyboard"){
             var index = this.config.buttons.findIndex(x => x.keyboardLocation == event.key);
             if (index != -1) {
+                if (!this.buildStartTime){
+                    this.buildStartTime = new Date();
+                }
+                this.lastChangeTime = new Date();
                 var keyChordValue = this.config.buttons[index].chordValue;
                 var newState = this.currentChordState | keyChordValue;
                 if (this.currentChordState != newState){
@@ -69,7 +75,13 @@ class Engine {
         } else { // not keyboard mode
             var state = event.key.charCodeAt(0) - 97;
             var buttons = [];
+            // this conjunction makes sure we aren't responding to
+            // the second 'a' that the RIC sends on major break
             if (!(state == 0 && this.currentChordState == 0)){
+                if (!this.buildStartTime){
+                    this.buildStartTime = new Date();
+                }
+                this.lastChangeTime = new Date();
                 for (let i = 0; i < this.config.buttons.length; i++){
                     if (this.config.buttons[i].chordValue & state) {
                         buttons.push(this.config.buttons[i].chordValue)
@@ -97,6 +109,11 @@ class Engine {
         if (this.history.length == 1 && this.history[0].state == 0) {
             this.history = [];
             this.activeOperation = null;
+            // currently nothing responds to this event
+            // since all operations are activated based on
+            // the recognition of a rule
+            // but if that were to change, this is the event
+            // to respond to.
             window.dispatchEvent(new CustomEvent('break'));
         }
         // only proceed if the history hasn't been fully discarded
@@ -120,10 +137,15 @@ class Engine {
                     var activeOperation = this.config.rules[i].operationName;
                     invalid = false;
                     this.history = [];
+                    var now = new Date();
                     window.dispatchEvent(new CustomEvent('operated', {"detail": {
                         valid: true,
-                        activeOperation
+                        activeOperation,
+                        buildTime: now - this.buildStartTime,
+                        dwellTime: now - this.lastChangeTime,
                     }}));
+                    this.buildStartTime = null;
+                    this.lastChangeTime = null;
                     return 0;
                 } else if (comparison == 'prefix'){
                     invalid = false;
