@@ -31,7 +31,7 @@ export default {
           {x:3, y:1, chordValue: 32, keyboardLocation: ";", label: "A"},
         ],
         rules: [
-          {operationName: "PTT", sequence: [4], hint: "Press and hold button 2.", Introduction: 2, Practice: 3, Review: 0, Test: 2},
+          {operationName: "PTT", sequence: [4], hint: "Press and hold button 2.", Practice: 3, Review: 0, Test: 2},
           {operationName: "Volume", sequence: [8, 0], hint: "Press button 3 and then release all buttons.", Practice: 3, Review: 0, Test: 2 },
           {operationName: "Range", sequence: [3], hint: "Press and hold button A and button 1.", Practice: 3, Review: 0, Test: 2 },
           {operationName: "Aim", sequence: [2], hint: "Press and hold button 1", Practice: 3, Review: 0, Test: 2 },
@@ -39,7 +39,7 @@ export default {
           {operationName: "Black/White", sequence: [9, 0], hint: "Press button A and button 3, and then release all buttons", Practice: 3, Review: 0, Test: 2 },
         ]
       },
-      currentPage: "Familiarisation",
+      currentPage: "Welcome",
       title: "Training App",
       logo1: null,
       logo2: null,
